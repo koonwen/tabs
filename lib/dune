@@ -1,0 +1,9 @@
+(library
+ (name tabs)
+ (preprocess (pps ppx_deriving.show ppx_deriving.make))
+ (libraries ptime gen))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
