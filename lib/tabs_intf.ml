@@ -17,9 +17,7 @@ module type BACKEND_S = sig
   val filter :
     ('key, 'value) t -> ('key * 'value -> bool) -> ('key * 'value) list
 
-  val pp : string list -> (Format.formatter -> 'key -> unit) ->
-    (Format.formatter -> 'value -> unit) ->
-    Format.formatter -> ('key, 'value) t -> unit
+  val to_assoc_list : ('key, 'value) t -> ('key * 'value) list
 end
 
 module type MAKE_S = functor (B : BACKEND_S) -> sig
@@ -57,11 +55,12 @@ module type MAKE_S = functor (B : BACKEND_S) -> sig
     t -> ?added_by:user -> ?date:date -> string -> (id * entry) list
 
   val show : t -> unit
+  val show_expenses : (id * entry) list -> unit
 end
-
 
 module type Intf = sig
   module type BACKEND_S = BACKEND_S
+
   module List_backend : BACKEND_S
   module Make : MAKE_S
 end
