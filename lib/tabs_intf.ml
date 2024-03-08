@@ -5,7 +5,7 @@
 *)
 
 (* The core data structure interface used to store tabs *)
-module type BACKEND_TYPE = sig
+module type BACKEND_S = sig
   type ('key, 'value) t
 
   val create : unit -> ('key, 'value) t
@@ -16,9 +16,13 @@ module type BACKEND_TYPE = sig
 
   val filter :
     ('key, 'value) t -> ('key * 'value -> bool) -> ('key * 'value) list
+
+  val pp : string list -> (Format.formatter -> 'key -> unit) ->
+    (Format.formatter -> 'value -> unit) ->
+    Format.formatter -> ('key, 'value) t -> unit
 end
 
-module type Make = functor (B : BACKEND_TYPE) -> sig
+module type MAKE_S = functor (B : BACKEND_S) -> sig
   type t
   (** Abstract type of the Tab backend. implementation to be decided, irmin/sqlite  *)
 
@@ -50,7 +54,14 @@ module type Make = functor (B : BACKEND_TYPE) -> sig
   val modify_expense : t -> id -> entry -> unit
 
   val filter_expenses :
-    ?added_by:user -> ?date:date -> name:string -> entry list
+    t -> ?added_by:user -> ?date:date -> string -> (id * entry) list
 
   val show : t -> unit
+end
+
+
+module type Intf = sig
+  module type BACKEND_S = BACKEND_S
+  module List_backend : BACKEND_S
+  module Make : MAKE_S
 end
