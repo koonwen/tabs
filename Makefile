@@ -1,5 +1,6 @@
+.PHONY:test
 test:
-	dune exec -- main
+	dune exec -- tabs
 
 switch:
 	opam switch create . --deps-only
