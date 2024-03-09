@@ -1,5 +1,4 @@
 include Tabs_intf
-module List_backend = List_backend
 
 module Make (B : BACKEND_S) = struct
   type user = { id : int; name : string; email : string }
@@ -112,3 +111,5 @@ module Make (B : BACKEND_S) = struct
       (pp_table headers pp_print_int pp_entry_tab)
       e
 end
+
+module Default_Tab = Make (List_backend)

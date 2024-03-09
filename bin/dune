@@ -1,4 +1,7 @@
 (executable
  (public_name tabs)
  (name main)
- (libraries tabs))
+ (modes byte js)
+ (preprocess
+  (pps js_of_ocaml-ppx))
+ (libraries app incr_dom))

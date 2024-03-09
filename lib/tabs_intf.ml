@@ -20,7 +20,7 @@ module type BACKEND_S = sig
   val to_assoc_list : ('key, 'value) t -> ('key * 'value) list
 end
 
-module type MAKE_S = functor (B : BACKEND_S) -> sig
+module type TAB_S = sig
   type t
   (** Abstract type of the Tab backend. implementation to be decided, irmin/sqlite  *)
 
@@ -58,9 +58,11 @@ module type MAKE_S = functor (B : BACKEND_S) -> sig
   val show_expenses : (id * entry) list -> unit
 end
 
+module type MAKE_S = functor (B : BACKEND_S) -> TAB_S
+
 module type Intf = sig
   module type BACKEND_S = BACKEND_S
 
-  module List_backend : BACKEND_S
   module Make : MAKE_S
+  module Default_Tab : TAB_S
 end
