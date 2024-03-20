@@ -18,6 +18,21 @@ module type BACKEND_S = sig
     ('key, 'value) t -> ('key * 'value -> bool) -> ('key * 'value) list
 
   val to_assoc_list : ('key, 'value) t -> ('key * 'value) list
+
+  val t_of_sexp :
+    (Sexplib0.Sexp.t -> 'key) ->
+    (Sexplib0.Sexp.t -> 'value) ->
+    Sexplib0.Sexp.t ->
+    ('key, 'value) t
+
+  val sexp_of_t :
+    ('key -> Sexplib0.Sexp.t) ->
+    ('value -> Sexplib0.Sexp.t) ->
+    ('key, 'value) t ->
+    Sexplib0.Sexp.t
+
+  val compare : ('key -> 'key -> int) ->
+    ('value -> 'value -> int) -> ('key, 'value) t -> ('key, 'value) t -> int
 end
 
 module type TAB_S = sig
@@ -56,9 +71,13 @@ module type TAB_S = sig
 
   val show : t -> unit
   val show_expenses : (id * entry) list -> unit
+
+  val t_of_sexp: Sexplib0.Sexp.t -> t
+  val sexp_of_t: t -> Sexplib0.Sexp.t
+  val compare: t -> t -> int
 end
 
-module type MAKE_S = functor (B : BACKEND_S) -> TAB_S
+module type MAKE_S = functor (_ : BACKEND_S) -> TAB_S
 
 module type Intf = sig
   module type BACKEND_S = BACKEND_S

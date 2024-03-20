@@ -1,4 +1,8 @@
+open Sexplib.Std
+open Ppx_compare_lib.Builtin
+
 type ('key, 'value) t = ('key * 'value) list ref
+[@@deriving sexp, compare]
 
 let create () = ref []
 let add t k v = t := (k, v) :: !t

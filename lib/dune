@@ -1,8 +1,8 @@
 (library
  (name tabs)
  (preprocess
-  (pps ppx_deriving.show ppx_deriving.make))
- (libraries ptime gen))
+  (pps ppx_deriving.show ppx_deriving.make ppx_jane))
+ (libraries ptime))
 
 (env
  (dev

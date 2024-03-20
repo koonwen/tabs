@@ -1,11 +1,30 @@
 include Tabs_intf
+open Ppx_compare_lib.Builtin
+open Sexplib.Std
+
+module Ptime = struct
+  include Ptime
+
+  let date_of_sexp =
+    let open Sexplib.Conv in
+    triple_of_sexp int_of_sexp int_of_sexp int_of_sexp
+
+  let sexp_of_date =
+    let open Sexplib.Conv in
+    sexp_of_triple sexp_of_int sexp_of_int sexp_of_int
+
+  let compare_date d1 d2 =
+    let t1 = of_date d1 |> Option.get in
+    let t2 = of_date d2 |> Option.get in
+    compare t1 t2
+end
 
 module Make (B : BACKEND_S) = struct
   type user = { id : int; name : string; email : string }
-  [@@deriving make, show { with_path = false }]
+  [@@deriving make, show { with_path = false }, sexp, compare]
 
-  type date = Ptime.date
-  type id = int
+  type date = Ptime.date [@@deriving sexp, compare]
+  type id = int [@@deriving sexp, compare]
 
   let make_date ~day ~month ~year = (day, month, year)
 
@@ -14,6 +33,7 @@ module Make (B : BACKEND_S) = struct
     Format.fprintf ppf "%d/%d/%d" day month year
 
   type split = Amt of (user * float) list | Percentage of (user * float) list
+  [@@deriving sexp, compare]
 
   type entry = {
     name : string;
@@ -22,7 +42,7 @@ module Make (B : BACKEND_S) = struct
     date : date;
     split : split;
   }
-  [@@deriving make]
+  [@@deriving make, sexp, compare]
 
   let pp_entry_tab ppf entry =
     let open Format in
@@ -51,14 +71,20 @@ module Make (B : BACKEND_S) = struct
     fprintf ppf "%a" pp_split_terse entry.split;
     print_tab ()
 
-  type t = { keygen : int Gen.gen; users : user list; tab : (id, entry) B.t }
+  type t = {
+    mutable key_counter : int;
+    users : user list;
+    tab : (id, entry) B.t;
+  }
+  [@@deriving sexp, compare]
 
-  let create users = { keygen = Gen.init Fun.id; users; tab = B.create () }
+  let create users = { key_counter = 0; users; tab = B.create () }
 
   let add_expense t entry =
     if not (List.mem entry.added_by t.users) then
       failwith "entry added by invalid user";
-    let key = Gen.next t.keygen |> Option.get in
+    let key = t.key_counter + 1 in
+    t.key_counter <- key;
     B.add t.tab key entry
 
   let delete_expense t key = B.delete t.tab key

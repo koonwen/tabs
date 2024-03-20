@@ -1,7 +1,8 @@
 .PHONY:test app
 
 app:
-	dune build ./bin
+	dune build
+	dune build ./bin/index.html
 	firefox _build/default/bin/index.html &
 
 test:
