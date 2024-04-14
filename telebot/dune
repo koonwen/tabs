@@ -1,0 +1,4 @@
+(executable
+ (name telebot)
+ (public_name telebot)
+ (libraries telegraml tab))
