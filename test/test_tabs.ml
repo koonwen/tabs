@@ -37,5 +37,5 @@ let () =
   Tab.show t;
 
   Format.printf "Get all breakfast\n";
-  let breakfast_only = Tab.filter_expenses t "breakfast" in
+  let breakfast_only = Tab.filter_expenses t (Some "breakfast") in
   Tab.show_expenses breakfast_only

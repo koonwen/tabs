@@ -24,13 +24,17 @@ module Make (B : BACKEND_S) = struct
   [@@deriving make, show { with_path = false }, sexp, compare]
 
   type date = Ptime.date [@@deriving sexp, compare]
-  type id = int [@@deriving sexp, compare]
+  type id = int [@@deriving show, sexp, compare]
 
   let make_date ~day ~month ~year = (day, month, year)
 
   let pp_date ppf date =
     let day, month, year = date in
     Format.fprintf ppf "%d/%d/%d" day month year
+
+  let show_date date =
+    pp_date Format.str_formatter date;
+    Buffer.contents Format.stdbuf
 
   type split = Amt of (user * float) list | Percentage of (user * float) list
   [@@deriving sexp, compare]
@@ -42,7 +46,9 @@ module Make (B : BACKEND_S) = struct
     date : date;
     split : split;
   }
-  [@@deriving make, sexp, compare]
+  [@@deriving make, sexp, compare, fields ~getters]
+
+  let show_amt = Format.sprintf "$%.2f"
 
   let pp_entry_tab ppf entry =
     let open Format in
@@ -90,12 +96,15 @@ module Make (B : BACKEND_S) = struct
   let delete_expense t key = B.delete t.tab key
   let modify_expense t key new_entry = B.modify t.tab key new_entry
 
-  let filter_expenses t ?added_by ?date name =
-    B.filter t.tab (fun (_k, v) ->
-        let x = Option.equal ( = ) added_by (Some v.added_by) in
-        let y = Option.equal ( = ) date (Some v.date) in
-        let z = name = v.name in
-        x || y || z)
+  let filter_expenses t ?added_by ?date name_op =
+    match name_op with
+    | None -> B.to_assoc_list t.tab
+    | Some name ->
+        B.filter t.tab (fun (_k, v) ->
+            let x = Option.equal ( = ) added_by (Some v.added_by) in
+            let y = Option.equal ( = ) date (Some v.date) in
+            let z = name = v.name in
+            x || y || z)
 
   let pp_header ppf =
     let open Format in
